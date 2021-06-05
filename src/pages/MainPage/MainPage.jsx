@@ -5,9 +5,8 @@ export default function MainPage() {
 	const [currencyData, setCurrencyData] = useState([])
 	const [buyPrice, setBuyPrice] = useState(0)
 	const [salePrice, setSalePrice] = useState(0)
-	const [buyResult, setBuyResult] = useState('')	
-	const [saleResult, setSaleResult] = useState('')	
-	const [currencyPare, setCurrencyPare] = useState('')
+	const [buyResult, setBuyResult] = useState('')
+	const [saleResult, setSaleResult] = useState('')
 	const [inputValue, setInputValue] = useState('')
 	const [selectValue, setSelectValue] = useState(localStorage.getItem('currency pare') || 'USD / UAH')
 
@@ -21,6 +20,7 @@ export default function MainPage() {
 			if(result.statusText!=='OK'){
 				throw new Error(result.statusText)
 			}
+			
 		}
 		catch(error){
 			throw new Error(error)
@@ -31,23 +31,18 @@ export default function MainPage() {
 		getData()
 	},[])
 
-	useEffect(()=>{		
-		setCurrencyPare(currencyData.map( ({ccy, base_ccy}, index) => {
-			const optionPare = `${ccy} / ${base_ccy}`
-			if( selectValue && selectValue === optionPare ){
+	const setoptions = () => {
+		if(currencyData){
+			return currencyData.map( ({ccy, base_ccy}, index) => {
+				const optionPare = `${ccy} / ${base_ccy}`
 				return(
-					<option value={selectValue} key={index}>  
-						{ccy} / {base_ccy} 
+					<option value={optionPare} key={index}>  
+						{ccy} / {base_ccy}
 					</option>
-				) 
-			}
-			return(
-				<option value={optionPare} key={index}>  
-					{ccy} / {base_ccy}
-				</option>
-			)
-		}))		
-	},[currencyData, selectValue])
+				)
+			})
+		}
+	}	
 
 	const setCurrencyPrice = (value) => {
 		currencyData.forEach((elem)=>{
@@ -65,9 +60,9 @@ export default function MainPage() {
 		setSaleResult('')
 	}
 
-	useEffect(()=>{		
+	useEffect(()=>{
 		setCurrencyPrice(selectValue)
-	})
+	},[currencyData])
 
 	const handleBuyResult = () => {
 		setBuyResult((inputValue * buyPrice).toFixed(2))
@@ -76,11 +71,14 @@ export default function MainPage() {
 	}
 
 	const handleSaleResult = () => {	
-		setSaleResult((inputValue * salePrice).toFixed(2))		
+		setSaleResult((inputValue * salePrice).toFixed(2))
 		setInputValue('')
 		setBuyResult('')
 	}
 	
+	const handleInputChange = ({target}) => {
+		setInputValue(target.value)
+	}
 
 	const handleSavePare = () => {
 		localStorage.setItem('currency pare', selectValue)
@@ -91,13 +89,13 @@ export default function MainPage() {
 			<input 
 				type='number'
 				value = {inputValue}
-				onChange = {({target})=>setInputValue(target.value)}
+				onChange = {handleInputChange}
 			/>
 			<select 
 				value={selectValue} 
 				onChange={handleSelectPare}
 			>
-				{currencyPare}
+				{setoptions()}
 			</select>
 			<button onClick={handleSavePare}>Сохранить пару</button>
 
